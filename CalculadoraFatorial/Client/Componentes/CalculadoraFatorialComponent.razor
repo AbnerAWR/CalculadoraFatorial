@@ -1,0 +1,68 @@
+﻿@inject HttpClient Http
+
+@inject IToastService toastService
+
+<hr />
+<div>
+	<div class="row">
+		<div class="col-sm-3">
+			<p>Entrada fatorial</p>
+		</div>
+		<div class="col-sm-4">
+			<input type="number" min="0" max="20" class="form-control"
+				   @bind="@num1" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+		</div>
+	</div>
+
+	<br />
+
+	<div class="row">
+		<div class="col-sm-3">
+			<p>Resultado</p>
+		</div>
+
+		<div class="col-sm-4">
+			<input readonly type="number" class="form-control" aria-label="Sizing example input"
+				   aria-describedby="inputGroup-sizing-default" @bind="resultFat" />
+		</div>
+	</div>
+
+	<br />
+
+	<div class="row">
+		<div class="col-sm-2">
+			<button @onclick="PostFatorial" class="btn btn-info">Fatorial (!)</button>
+		</div>
+	</div>
+</div>
+
+@functions
+{
+	public string resultFat { get; set; }
+
+	private string num1;
+
+	async Task PostFatorial()
+	{
+		try
+		{
+			RenderFragment mensagem = @<text> Fatorial calculado com sucesso. </text>;
+
+			var stringContent = new StringContent($"{num1}", System.Text.Encoding.UTF8, "application/json");
+
+			var result = await Http.PostAsync("api/CalculadoraFatorial/CalcularFatorial", stringContent).ConfigureAwait(false);
+
+			resultFat = await result.Content.ReadAsStringAsync();
+
+			toastService.ShowToast(ToastLevel.Success, mensagem);
+		}
+
+		catch (Exception e)
+		{
+			string mensagemErro = "Não foi possivel calcular o fatorial. (Erro interno)";
+
+			toastService.ShowToast(ToastLevel.Error, mensagemErro);
+		}
+
+	}
+}
